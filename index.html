@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>X(OLD)アカウント メール認証コード確認方法</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', Meiryo, sans-serif;
+      background-color: #f5f7fa;
+      color: #333;
+      line-height: 1.8;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 40px 20px 80px;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 1.8rem;
+      color: #1a1a2e;
+      margin-bottom: 40px;
+      padding-bottom: 16px;
+      border-bottom: 3px solid #1da1f2;
+    }
+
+    .step {
+      background: #fff;
+      border-radius: 12px;
+      padding: 28px 32px;
+      margin-bottom: 24px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+      position: relative;
+    }
+
+    .step-number {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      background: #1da1f2;
+      color: #fff;
+      border-radius: 50%;
+      font-weight: 700;
+      font-size: 1rem;
+      margin-right: 12px;
+      flex-shrink: 0;
+    }
+
+    .step h2 {
+      display: flex;
+      align-items: center;
+      font-size: 1.25rem;
+      color: #1a1a2e;
+      margin-bottom: 16px;
+    }
+
+    .step p {
+      font-size: 1rem;
+      color: #555;
+      margin-bottom: 12px;
+    }
+
+    .step a {
+      color: #1da1f2;
+      text-decoration: none;
+      word-break: break-all;
+      font-weight: 500;
+    }
+
+    .step a:hover {
+      text-decoration: underline;
+    }
+
+    .link-box {
+      display: block;
+      background: #eef6fd;
+      border: 1px solid #c4e1f6;
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin: 12px 0;
+      font-size: 0.95rem;
+      text-align: center;
+    }
+
+    .step .highlight {
+      background: #fff3cd;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 700;
+      color: #333;
+    }
+
+    .step .bold {
+      font-weight: 700;
+      color: #1a1a2e;
+    }
+
+    .step-image {
+      display: block;
+      max-width: 100%;
+      border-radius: 8px;
+      margin: 16px auto 0;
+      border: 1px solid #e0e0e0;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+    }
+
+    .point-arrow {
+      display: inline-block;
+      font-size: 1.3rem;
+      margin-right: 4px;
+      vertical-align: middle;
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        padding: 24px 12px 60px;
+      }
+
+      h1 {
+        font-size: 1.3rem;
+      }
+
+      .step {
+        padding: 20px 18px;
+      }
+
+      .step h2 {
+        font-size: 1.1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>X(OLD)アカウント<br>メール認証コード確認方法</h1>
+
+    <!-- Step 1 -->
+    <div class="step">
+      <h2>
+        <span class="step-number">1</span>
+        メール確認サイトにアクセス
+      </h2>
+      <p><span class="point-arrow">👆</span> こちらにアクセスしてください</p>
+      <a class="link-box" href="https://unlimitmail.com/email" target="_blank" rel="noopener noreferrer">
+        https://unlimitmail.com/email
+      </a>
+    </div>
+
+    <!-- Step 2 -->
+    <div class="step">
+      <h2>
+        <span class="step-number">2</span>
+        右側をクリック
+      </h2>
+      <p>
+        <span class="highlight">"Get Code Mail Domain"</span> と書かれている項目の青いボタンをクリック
+      </p>
+      <img src="images/スクリーンショット 2026-02-18 2.20.17.png" alt="Get Code Mail Domain の選択画面" class="step-image">
+    </div>
+
+    <!-- Step 3 -->
+    <div class="step">
+      <h2>
+        <span class="step-number">3</span>
+        メールアドレス、パスワードを入力
+      </h2>
+      <p>
+        画像上部の <span class="highlight">"email|password"</span> と書かれている入力ボックスに、スプレッドシートの「<span class="bold">メールアドレス | パスワード</span>」をそのままコピペしてください
+      </p>
+      <img src="images/スクリーンショット 2026-02-18 2.20.52.png" alt="メールアドレスとパスワードの入力画面" class="step-image">
+    </div>
+
+    <!-- Step 4 -->
+    <div class="step">
+      <h2>
+        <span class="step-number">4</span>
+        Twitterを選択
+      </h2>
+      <p>
+        下部の選択欄で <span class="highlight">"Twitter"</span> を選択します
+      </p>
+      <img src="images/スクリーンショット 2026-02-18 2.23.31.png" alt="Twitterを選択する画面" class="step-image">
+    </div>
+
+    <!-- Step 5 -->
+    <div class="step">
+      <h2>
+        <span class="step-number">5</span>
+        ボタンを押下
+      </h2>
+      <p>
+        下部の<span class="bold">青いボタン</span>を押すことで認証コードが取得できます
+      </p>
+    </div>
+  </div>
+</body>
+</html>
