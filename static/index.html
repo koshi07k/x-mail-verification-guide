@@ -1,0 +1,1724 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>X-Pilot</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/style.css?v=27" id="main-css">
+    <script>
+        if (location.protocol !== 'file:') document.documentElement.classList.add('ops-ui');
+    </script>
+    <style>
+        #page-accounts > .ops-import-bootstrap-shell { display: none; }
+        .ops-ui #page-accounts[data-ops-import-shell="true"] > :not(.ops-import-bootstrap-shell) { display: none !important; }
+        .ops-ui #page-accounts[data-ops-import-shell="true"] > .ops-import-bootstrap-shell { display: block; }
+    </style>
+    <script>
+        // file:// で直接開いた場合のCSS/JSパス自動修正
+        if (location.protocol === 'file:') {
+            document.getElementById('main-css').href = 'css/style.css?v=27';
+        }
+    </script>
+</head>
+<body>
+<div class="app-container">
+    <!-- Mobile hamburger -->
+    <button class="hamburger" id="hamburger-btn" aria-label="メニュー">
+        <span></span><span></span><span></span>
+    </button>
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <!-- Sidebar -->
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h1>X-Pilot</h1>
+            <p>アカウント自動育成ツール</p>
+        </div>
+        <button class="nav-item active" data-page="dashboard">
+            <span class="nav-icon">&#9632;</span> ダッシュボード
+        </button>
+        <button class="nav-item" data-page="accounts">
+            <span class="nav-icon">&#9787;</span> インポート
+        </button>
+        <button class="nav-item" data-page="public-check">
+            <span class="nav-icon">&#128269;</span> 公開状態チェック
+        </button>
+        <button class="nav-item" data-page="competitors">
+            <span class="nav-icon">&#9673;</span> 競合監視
+        </button>
+        <button class="nav-item" data-page="tweet">
+            <span class="nav-icon">&#9998;</span> ツイート
+        </button>
+        <button class="nav-item" data-page="profile">
+            <span class="nav-icon">&#9881;</span> プロフィール
+        </button>
+        <button class="nav-item" data-page="actions">
+            <span class="nav-icon">&#9733;</span> 一括アクション
+        </button>
+        <button class="nav-item" data-page="proxy">
+            <span class="nav-icon">&#9741;</span> Proxy管理
+        </button>
+        <button class="nav-item" data-page="farming">
+            <span class="nav-icon">&#9874;</span> 育成工場
+        </button>
+        <button class="nav-item" data-page="logic-comparison">
+            <span class="nav-icon">&#8644;</span> ロジック比較
+        </button>
+        <button class="nav-item" data-page="warmup">
+            <span class="nav-icon">&#9832;</span> Warmup管理
+        </button>
+        <button class="nav-item" data-page="export">
+            <span class="nav-icon">&#8689;</span> エクスポート
+        </button>
+        <button class="nav-item" data-page="deleted">
+            <span class="nav-icon">&#128465;</span> 削除済み
+        </button>
+        <button class="nav-item" data-page="tasks">
+            <span class="nav-icon">&#9201;</span> タスク管理
+        </button>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+
+        <!-- Dashboard Page -->
+        <div id="page-dashboard" class="page active" data-ops-dashboard-shell="true">
+            <div class="page-header">
+                <h2>運用ダッシュボード</h2>
+                <p>インポート → Warmup → 自動育成 の進行、今日の投稿予定、履歴を確認</p>
+            </div>
+            <div class="card" style="margin-top:24px;">
+                <div class="card-title">読み込み中...</div>
+                <p style="font-size:13px;color:var(--text-muted);margin:0;">運用ダッシュボードを準備しています。</p>
+            </div>
+        </div>
+
+        <!-- Accounts Page -->
+        <div id="page-accounts" class="page" data-ops-import-shell="true">
+            <div class="ops-import-bootstrap-shell">
+                <div class="page-header">
+                    <h2>インポート</h2>
+                    <p>インポート画面を準備しています</p>
+                </div>
+                <div class="card" style="margin-top:24px;" aria-busy="true">
+                    <div class="card-title">読み込み中...</div>
+                </div>
+            </div>
+            <div class="page-header">
+                <h2>アカウント管理</h2>
+                <p>Xアカウントの追加・編集・ログイン</p>
+            </div>
+            <div class="btn-group" style="margin-bottom: 16px;">
+                <button class="btn btn-primary" onclick="showAddAccountModal()">+ アカウント追加</button>
+                <button class="btn btn-success" id="btn-login-all" onclick="loginAll()">全アカウント一括ログイン</button>
+                <button class="btn btn-outline" id="btn-login-selected" onclick="loginSelected()">選択アカウント一括ログイン</button>
+                <button class="btn btn-outline" onclick="batchRefreshAvatars()">更新(アイコン再取得)</button>
+                <button class="btn btn-outline" onclick="toggleBulkImport()">&#128203; 一括インポート</button>
+                <button class="btn btn-outline" onclick="shadowbanCheckSelected()" style="border-color:#f59e0b;color:#f59e0b;">ShadowBan Check</button>
+                <span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--text-muted);">
+                    <label for="shadowban-check-method" style="white-space:nowrap;">方式:</label>
+                    <select id="shadowban-check-method" style="font-size:12px;padding:4px 8px;border-radius:6px;background:var(--bg-card);color:var(--text);border:1px solid var(--border);">
+                        <option value="browser">Browser</option>
+                        <option value="graphql">GraphQL/API</option>
+                    </select>
+                </span>
+                <button class="btn btn-outline" onclick="loadLastShadowbanResults()" style="border-color:#f59e0b;color:#f59e0b;opacity:0.7;font-size:12px;" title="前回のチェック結果を表示">前回の結果</button>
+                <button class="btn btn-outline" onclick="fetchAccountCreatedYears()" style="border-color:#6366f1;color:#6366f1;" title="選択アカウントのX作成年を取得して一覧の統計列に反映">作成年取得</button>
+                <button class="btn btn-outline" onclick="fetchAccountStats()" style="border-color:#6366f1;color:#6366f1;">統計取得</button>
+                <button class="btn btn-outline" onclick="toggleBulkPassword()">&#128274; 一括PW変更</button>
+            </div>
+
+            <!-- 一括インポート -->
+            <div id="bulk-import-area" class="card" style="display:none;margin-bottom:16px;">
+                <div class="card-title">アカウント一括インポート</div>
+                <!-- モード切替タブ -->
+                <div class="btn-group" style="margin-bottom:12px;">
+                    <button class="btn btn-sm btn-primary" id="import-tab-auto" onclick="switchImportTab('auto')">そのままインポート</button>
+                    <button class="btn btn-sm btn-outline" id="import-tab-custom" onclick="switchImportTab('custom')">列指定</button>
+                </div>
+
+                <!-- 自動判別モード -->
+                <div id="import-mode-auto">
+                    <p style="font-size:12px;color:var(--text-muted);margin-bottom:8px;">
+                        よく使う2つの形式をそのまま自動判別します。混在OK。<br>
+                        形式A: <code>ID|PassWord|2FA|BackUpMail|MailPassWord|auth_token=xxxx</code> (改行区切り)<br>
+                        形式B: <code>账号----密码----邮箱----邮箱密码----SMS----2FA----token</code> (半角スペースで次のアカウント)
+                    </p>
+                    <div class="form-group">
+                        <textarea id="bulk-import-text" rows="6" placeholder="形式A (1行1アカウント):&#10;user1|pass123|ABCD1234|backup@mail.com|mailpass|auth_token=abc123&#10;&#10;形式B (スペース区切りで複数アカウント):&#10;user2----pw----mail@x.com----mpw----090xxxx----2FAKEY----token user3----pw----mail@x.com----mpw----080xxxx----2FA----token"
+                                  oninput="syncBulkImportTextFromAuto()"></textarea>
+                    </div>
+                    <div style="display:flex;gap:8px;align-items:center;">
+                        <button class="btn btn-primary" onclick="bulkImportAccounts()">インポート実行</button>
+                        <span id="bulk-import-result" style="font-size:13px;"></span>
+                    </div>
+                </div>
+
+                <!-- カスタム設定モード -->
+                <div id="import-mode-custom" style="display:none;">
+                    <p style="font-size:12px;color:var(--text-muted);margin-bottom:8px;">
+                        公開状態チェックの列指定モードと同じように、任意の区切り文字と列の割り当てでインポートできます。不要な列はスキップしてください。
+                    </p>
+                    <!-- Step 1: 区切り文字 -->
+                    <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;margin-bottom:12px;">
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label style="font-size:12px;font-weight:600;">列の区切り文字</label>
+                            <div style="display:flex;gap:4px;flex-wrap:wrap;">
+                                <button class="btn btn-sm btn-primary" data-delim="|" onclick="selectCustomDelimiter(this)">|（パイプ）</button>
+                                <button class="btn btn-sm btn-outline" data-delim="----" onclick="selectCustomDelimiter(this)">----</button>
+                                <button class="btn btn-sm btn-outline" data-delim=":" onclick="selectCustomDelimiter(this)">:（コロン）</button>
+                                <button class="btn btn-sm btn-outline" data-delim="," onclick="selectCustomDelimiter(this)">,（カンマ）</button>
+                                <button class="btn btn-sm btn-outline" data-delim="\t" onclick="selectCustomDelimiter(this)">TAB</button>
+                                <button class="btn btn-sm btn-outline" data-delim=" " id="delim-btn-space" onclick="selectCustomDelimiter(this)">スペース</button>
+                            </div>
+                        </div>
+                        <div class="form-group" style="margin-bottom:0;flex:0 0 180px;">
+                            <label style="font-size:12px;font-weight:600;">カスタム区切り</label>
+                            <input type="text" id="custom-delim-input" placeholder="例: ;; や --- など"
+                                   oninput="onCustomDelimiterInput()" style="font-size:13px;padding:4px 8px;">
+                        </div>
+                    </div>
+
+                    <!-- アカウント区切りオプション -->
+                    <div style="margin-bottom:12px;">
+                        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;">
+                            <input type="checkbox" id="custom-space-separator" onchange="onSpaceSeparatorChange()">
+                            <span style="font-weight:600;">半角スペースで次のアカウントに移行</span>
+                            <span style="color:var(--text-muted);">— 1行に複数アカウントが並ぶ形式の場合にON</span>
+                        </label>
+                        <div id="space-sep-example" style="display:none;margin-top:4px;padding:6px 10px;background:var(--bg-dark);border-radius:4px;font-size:11px;color:var(--text-muted);">
+                            例: <code>user1|pass1|mail1 user2|pass2|mail2 user3|pass3|mail3</code> → 3アカウントとして認識
+                        </div>
+                    </div>
+
+                    <!-- Step 2: テキスト入力 -->
+                    <div class="form-group">
+                        <label style="font-size:12px;font-weight:600;">アカウントデータ</label>
+                        <textarea id="custom-import-text" rows="5"
+                                  placeholder="データを貼り付けてください&#10;例: user1|pass1|mail@example.com|token123"
+                                  oninput="onCustomImportTextInput()"></textarea>
+                    </div>
+
+                    <!-- Step 3: プレビュー + マッピング -->
+                    <div id="custom-import-preview" style="display:none;margin-bottom:12px;">
+                        <label style="font-size:12px;font-weight:600;display:block;margin-bottom:6px;">
+                            プレビュー — 各列にフィールドを割り当ててください
+                            <span style="color:var(--danger);font-weight:normal;">（username は必須、他は必要な列だけ指定）</span>
+                        </label>
+                        <div id="custom-import-preview-table" style="overflow-x:auto;"></div>
+                    </div>
+
+                    <!-- Step 4: インポート実行 -->
+                    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                        <button class="btn btn-primary" onclick="executeCustomImport()">カスタムインポート実行</button>
+                        <button class="btn btn-outline btn-sm" onclick="autoDetectFieldMapping()" title="列の内容からフィールドを自動推測">🔍 自動推測</button>
+                        <span id="custom-import-result" style="font-size:13px;"></span>
+                    </div>
+                </div>
+            </div>
+            <!-- 一括パスワード変更 -->
+            <div id="bulk-password-area" class="card" style="display:none;margin-bottom:16px;">
+                <div class="card-title">一括パスワード変更</div>
+                <p style="font-size:12px;color:var(--text-muted);margin-bottom:8px;">
+                    チェックしたアカウント（未選択なら全ログイン済みアカウント）のパスワードを変更します。
+                </p>
+                <div class="form-group">
+                    <label>新しいパスワード</label>
+                    <input type="text" id="bulk-password-value" placeholder="新しいパスワードを入力">
+                </div>
+                <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                    <button class="btn btn-primary" onclick="executeChangePasswordOnX()">X側のパスワードを変更</button>
+                    <button class="btn btn-outline" onclick="executeBulkPassword()">ローカル保存のみ変更</button>
+                    <span id="bulk-password-result" style="font-size:13px;"></span>
+                </div>
+                <p style="font-size:11px;color:var(--text-muted);margin-top:8px;">
+                    <strong>X側のパスワードを変更</strong>: Xの設定画面を操作して実際にパスワードを変更します（ログイン済みアカウントのみ）。成功後ローカルも自動更新されます。<br>
+                    <strong>ローカル保存のみ変更</strong>: Excelに保存されているパスワードのみ更新します。X側のパスワードは変わりません。
+                </p>
+            </div>
+
+            <div class="card" style="margin-bottom:16px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
+                    <div class="card-title" style="margin-bottom:0;">シャドウバン検索用アカウント</div>
+                    <div id="shadowban-checker-summary" style="font-size:12px;color:var(--text-muted);"></div>
+                </div>
+                <p style="font-size:12px;color:var(--text-muted);margin-bottom:8px;">
+                    ログイン画面誤認を避けるため、検索専用の <code>Auth Token</code> を登録します。複数登録すると、並列ワーカーへ順番に割り当てます。
+                </p>
+                <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;margin-bottom:10px;">
+                    <div class="form-group" style="margin-bottom:0;min-width:180px;flex:1;">
+                        <label>表示名 (任意)</label>
+                        <input type="text" id="shadowban-checker-label" placeholder="例: 検索用01">
+                    </div>
+                    <div class="form-group" style="margin-bottom:0;min-width:240px;flex:2;">
+                        <label>Auth Token</label>
+                        <input type="text" id="shadowban-checker-auth-token" placeholder="auth_token を貼り付け">
+                    </div>
+                    <div class="form-group" style="margin-bottom:0;min-width:240px;flex:1;">
+                        <label>Proxy</label>
+                        <select id="shadowban-checker-proxy-select">
+                            <option value="">Proxyなし</option>
+                        </select>
+                    </div>
+                    <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;margin-bottom:8px;">
+                        <input type="checkbox" id="shadowban-checker-enabled" checked>
+                        <span>有効</span>
+                    </label>
+                    <button class="btn btn-primary" onclick="saveShadowbanCheckerAccount()">検索用アカウントをセット</button>
+                </div>
+                <div id="shadowban-checker-list" class="checkbox-list" style="max-height:260px;"></div>
+            </div>
+
+            <!-- シャドウバンチェック結果 -->
+            <div id="shadowban-results" class="card" style="display:none;margin-bottom:16px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:8px;">
+                    <div class="card-title" style="margin-bottom:0;">ShadowBan Check 結果</div>
+                    <button class="btn btn-sm btn-outline" onclick="loadLastShadowbanResults()" style="font-size:12px;padding:4px 12px;">前回の結果を表示</button>
+                </div>
+                <div id="shadowban-results-body"></div>
+            </div>
+
+            <div style="margin-bottom:12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                <span style="font-size:13px;color:var(--text-muted)">絞り込み:</span>
+                <button class="btn btn-sm btn-outline filter-btn" data-filter="all" onclick="filterAccountTable('all')" style="font-size:12px">全て</button>
+                <button class="btn btn-sm btn-outline filter-btn" data-filter="no-icon" onclick="filterAccountTable('no-icon')" style="font-size:12px">アイコン未変更</button>
+                <button class="btn btn-sm btn-outline filter-btn" data-filter="no-name" onclick="filterAccountTable('no-name')" style="font-size:12px">名前未変更</button>
+                <button class="btn btn-sm btn-outline filter-btn" data-filter="no-bio" onclick="filterAccountTable('no-bio')" style="font-size:12px">プロフ未変更</button>
+                <button class="btn btn-sm btn-outline filter-btn" data-filter="no-profile" onclick="filterAccountTable('no-profile')" style="font-size:12px">全て未設定</button>
+                <button class="btn btn-sm btn-outline filter-btn" data-filter="edited" onclick="filterAccountTable('edited')" style="font-size:12px">設定済み</button>
+            </div>
+            <div class="card">
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th><input type="checkbox" id="select-all-accounts" onchange="toggleAllAccounts(this)"></th>
+                                <th>ユーザー名</th>
+                                <th>統計</th>
+                                <th>シャドウバン</th>
+                                <th>ログイン方式</th>
+                                <th>プロキシ</th>
+                                <th>ステータス</th>
+                                <th>最終ログイン</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="accounts-table"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="page-public-check" class="page">
+            <div class="page-header">
+                <h2>公開状態チェック</h2>
+                <p>納品前アカウントを username のみで一時チェック。保存はしません。</p>
+            </div>
+            <div class="card" style="margin-bottom:16px;">
+                <div class="card-title">入力</div>
+                <p style="font-size:12px;color:var(--text-muted);margin-bottom:8px;">
+                    <code>txt</code> / <code>csv</code> を読み込むか直接貼り付けできます。アカウント管理には保存されず、この画面で一時チェックするだけです。
+                </p>
+                <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px;">
+                    <input type="file" id="public-check-file" accept=".txt,.csv,.tsv">
+                    <button class="btn btn-outline btn-sm" onclick="loadPublicCheckFile()">ファイル読込</button>
+                    <button class="btn btn-outline btn-sm" onclick="clearPublicCheckFile()">ファイル削除</button>
+                    <button class="btn btn-outline btn-sm" onclick="loadImportedAccountsIntoPublicCheck()">登録済みアカウントを読込</button>
+                    <button class="btn btn-outline btn-sm" onclick="loadLatestPublicAccountCheck()">前回結果</button>
+                </div>
+                <p style="font-size:12px;color:var(--text-muted);margin-bottom:8px;">
+                    「登録済みアカウントを読込」を押すと、インポート済みアカウントの username を自動で入力欄へ流し込みます。
+                </p>
+                <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;margin-bottom:10px;">
+                    <div class="form-group" style="margin-bottom:0;min-width:320px;flex:1;">
+                        <label>追加Proxy (任意・改行で複数)</label>
+                        <textarea id="public-check-proxy" rows="2" placeholder="http://user:pass@host:port&#10;host:port:user:pass"></textarea>
+                    </div>
+                    <div class="form-group" style="margin-bottom:0;min-width:160px;">
+                        <label>並列数</label>
+                        <select id="public-check-concurrency">
+                            <option value="1">1 並列</option>
+                            <option value="2">2 並列</option>
+                            <option value="3" selected>3 並列</option>
+                            <option value="5">5 並列</option>
+                            <option value="8">8 並列</option>
+                            <option value="10">10 並列</option>
+                        </select>
+                    </div>
+                    <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;margin-bottom:8px;">
+                        <input type="checkbox" id="public-check-humanize" checked>
+                        <span>人間的な待機・スクロールを入れる</span>
+                    </label>
+                    <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;margin-bottom:8px;">
+                        <input type="checkbox" id="public-check-save-screenshots" checked>
+                        <span>チェック画面をPNG保存する</span>
+                    </label>
+                </div>
+                <div class="card" style="margin-bottom:12px;padding:14px;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
+                        <div class="card-title" style="margin-bottom:0;">登録済みProxyを選択</div>
+                        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                            <button class="btn btn-sm btn-outline" onclick="loadPublicCheckProxyOptions()">再読込</button>
+                            <button class="btn btn-sm btn-outline" onclick="selectAllPublicCheckProxies(true)">全選択</button>
+                            <button class="btn btn-sm btn-outline" onclick="selectAllPublicCheckProxies(false)">全解除</button>
+                        </div>
+                    </div>
+                    <p style="font-size:12px;color:var(--text-muted);margin-bottom:8px;">
+                        選択したProxyを並列ワーカーへ順番に割り当てます。未選択ならProxyなしで実行します。
+                    </p>
+                    <div id="public-check-proxy-list" class="checkbox-list" style="max-height:180px;"></div>
+                </div>
+                <div class="btn-group" style="margin-bottom:12px;">
+                    <button class="btn btn-sm btn-primary" id="public-check-tab-simple" onclick="switchPublicCheckTab('simple')">そのまま確認</button>
+                    <button class="btn btn-sm btn-outline" id="public-check-tab-mapped" onclick="switchPublicCheckTab('mapped')">列指定</button>
+                </div>
+                <div id="public-check-mode-simple">
+                    <div class="form-group">
+                        <textarea id="public-check-text" rows="7" placeholder="OpenAI&#10;@github&#10;https://x.com/user_name"></textarea>
+                    </div>
+                </div>
+                <div id="public-check-mode-mapped" style="display:none;">
+                    <p style="font-size:12px;color:var(--text-muted);margin-bottom:8px;">
+                        一括インポートと同じように列区切りを指定し、どの列が <code>username</code> かを選びます。パスワードやAuthTokenは使いません。
+                    </p>
+                    <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;margin-bottom:12px;">
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label style="font-size:12px;font-weight:600;">列の区切り文字</label>
+                            <div style="display:flex;gap:4px;flex-wrap:wrap;">
+                                <button class="btn btn-sm btn-primary" data-public-delim="|" onclick="selectPublicCheckDelimiter(this)">|（パイプ）</button>
+                                <button class="btn btn-sm btn-outline" data-public-delim="----" onclick="selectPublicCheckDelimiter(this)">----</button>
+                                <button class="btn btn-sm btn-outline" data-public-delim=":" onclick="selectPublicCheckDelimiter(this)">:（コロン）</button>
+                                <button class="btn btn-sm btn-outline" data-public-delim="," onclick="selectPublicCheckDelimiter(this)">,（カンマ）</button>
+                                <button class="btn btn-sm btn-outline" data-public-delim="\t" onclick="selectPublicCheckDelimiter(this)">TAB</button>
+                                <button class="btn btn-sm btn-outline" data-public-delim=" " id="public-delim-btn-space" onclick="selectPublicCheckDelimiter(this)">スペース</button>
+                            </div>
+                        </div>
+                        <div class="form-group" style="margin-bottom:0;flex:0 0 180px;">
+                            <label style="font-size:12px;font-weight:600;">カスタム区切り</label>
+                            <input type="text" id="public-check-custom-delim-input" placeholder="例: ;; や --- など"
+                                   oninput="onPublicCheckDelimiterInput()" style="font-size:13px;padding:4px 8px;">
+                        </div>
+                    </div>
+                    <div style="margin-bottom:12px;">
+                        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;">
+                            <input type="checkbox" id="public-check-space-separator" onchange="onPublicCheckSpaceSeparatorChange()">
+                            <span style="font-weight:600;">半角スペースで次のアカウントに移行</span>
+                            <span style="color:var(--text-muted);">— 1行に複数アカウントが並ぶ形式の場合にON</span>
+                        </label>
+                        <div id="public-check-space-sep-example" style="display:none;margin-top:4px;padding:6px 10px;background:var(--bg-dark);border-radius:4px;font-size:11px;color:var(--text-muted);">
+                            例: <code>user1|memo1 user2|memo2 user3|memo3</code> → 3アカウントとして認識
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <textarea id="public-check-mapped-text" rows="6" placeholder="例: 001|OpenAI|memo&#10;002|github|memo"
+                                  oninput="updatePublicCheckPreview()"></textarea>
+                    </div>
+                    <div id="public-check-preview" style="display:none;margin-bottom:12px;">
+                        <label style="font-size:12px;font-weight:600;display:block;margin-bottom:6px;">
+                            プレビュー — <code>username</code> 列を指定してください
+                        </label>
+                        <div id="public-check-preview-table" style="overflow-x:auto;"></div>
+                    </div>
+                </div>
+                <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                    <button class="btn btn-primary" id="public-check-run-btn" onclick="runPublicAccountCheck()">チェック実行</button>
+                    <button class="btn btn-outline btn-sm" onclick="autoDetectPublicCheckFieldMapping()">username列を自動推測</button>
+                    <span id="public-check-result" style="font-size:13px;"></span>
+                </div>
+            </div>
+
+            <div id="public-check-loading" class="card public-check-loading" style="display:none;margin-bottom:16px;">
+                <div class="public-check-loading-head">
+                    <div>
+                        <div class="card-title" style="margin-bottom:4px;">チェック中</div>
+                        <div id="public-check-loading-text" style="font-size:12px;color:var(--text-muted);">開始しています...</div>
+                    </div>
+                    <div class="public-check-loading-spinner"></div>
+                </div>
+                <div class="public-check-loading-bar">
+                    <div id="public-check-loading-bar-fill" class="public-check-loading-bar-fill"></div>
+                </div>
+                <div class="public-check-loading-skeletons">
+                    <div class="public-check-loading-skeleton"></div>
+                    <div class="public-check-loading-skeleton"></div>
+                    <div class="public-check-loading-skeleton"></div>
+                </div>
+            </div>
+
+            <div id="public-check-results" class="card" style="display:none;margin-bottom:16px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
+                    <div class="card-title" style="margin-bottom:0;">公開状態チェック結果</div>
+                    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                        <button id="public-check-copy-restricted-btn" class="btn btn-outline btn-sm" onclick="copyRestrictedPublicCheckList()" style="display:none;">制限系をコピー</button>
+                        <button id="public-check-delete-restricted-btn" class="btn btn-danger btn-sm" onclick="deleteRestrictedPublicCheckAccounts()" style="display:none;">制限系を一括削除</button>
+                        <a id="public-check-download-restricted-btn" class="btn btn-outline btn-sm" href="/api/accounts/public-check/latest/restricted-screenshots.zip" style="display:none;">制限系スクショ一括DL</a>
+                        <div id="public-check-summary" style="font-size:12px;color:var(--text-muted);"></div>
+                    </div>
+                </div>
+                <div id="public-check-restricted-copy-wrap" style="display:none;margin-bottom:10px;">
+                    <label style="display:block;font-size:12px;font-weight:600;margin-bottom:6px;">制限系アカウント一覧</label>
+                    <textarea id="public-check-restricted-copy" rows="2" readonly placeholder="username1,username2,username3"></textarea>
+                </div>
+                <div id="public-check-results-body"></div>
+            </div>
+        </div>
+
+        <!-- Competitor Monitor Page -->
+        <div id="page-competitors" class="page">
+            <div class="page-header">
+                <h2>競合監視</h2>
+                <p>Xの競合アフィリエイトアカウントの投稿・反応推移を確認</p>
+            </div>
+
+            <div class="stats-grid" style="margin-bottom:16px;">
+                <div class="stat-card">
+                    <div class="stat-value" id="competitor-stat-targets">0</div>
+                    <div class="stat-label">監視対象</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="competitor-stat-posts">0</div>
+                    <div class="stat-label">収集ポスト</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="competitor-stat-monitored">0</div>
+                    <div class="stat-label">監視中ポスト</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="competitor-stat-auth">0</div>
+                    <div class="stat-label">監視AuthToken</div>
+                </div>
+            </div>
+
+            <div class="card" style="margin-bottom:16px;">
+                <div class="card-title" style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;">
+                    <span>監視操作</span>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                        <button class="btn btn-sm btn-primary" onclick="runCompetitorMonitorNow()">今すぐ監視実行</button>
+                        <button class="btn btn-sm btn-outline" onclick="refreshCompetitorPage()">更新</button>
+                    </div>
+                </div>
+                <div id="competitor-scheduler-status" style="font-size:13px;color:var(--text-muted);"></div>
+            </div>
+
+            <div class="two-col">
+                <div class="card">
+                    <div class="card-title">監視用AuthToken</div>
+                    <div class="form-group">
+                        <label>ラベル</label>
+                        <input id="competitor-auth-label" placeholder="例: monitor-01">
+                    </div>
+                    <div class="form-group">
+                        <label>AuthToken</label>
+                        <input id="competitor-auth-token" placeholder="auth_token値">
+                    </div>
+                    <div class="form-group">
+                        <label>Proxy</label>
+                        <select id="competitor-auth-proxy"></select>
+                    </div>
+                    <label style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+                        <input type="checkbox" id="competitor-auth-enabled" checked>
+                        <span>有効</span>
+                    </label>
+                    <button class="btn btn-primary" onclick="addCompetitorAuthAccount()">AuthToken追加</button>
+                    <div id="competitor-auth-list" style="margin-top:14px;"></div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">監視対象アカウント</div>
+                    <div class="form-group">
+                        <label>アカウントID</label>
+                        <input id="competitor-target-username" placeholder="例: affiliate_account">
+                    </div>
+                    <div class="form-group">
+                        <label>過去取得日数</label>
+                        <input id="competitor-target-days" type="number" min="1" max="30" value="7">
+                    </div>
+                    <label style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+                        <input type="checkbox" id="competitor-target-enabled" checked>
+                        <span>対象を有効化</span>
+                    </label>
+                    <label style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+                        <input type="checkbox" id="competitor-target-auto-new" checked>
+                        <span>新規ポストを自動で監視対象にする</span>
+                    </label>
+                    <button class="btn btn-primary" onclick="addCompetitorTarget()">対象追加・過去取得</button>
+                    <div id="competitor-target-list" style="margin-top:14px;"></div>
+                </div>
+            </div>
+
+            <div class="card" style="margin-top:16px;">
+                <div class="card-title" style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;">
+                    <span>ポスト一覧</span>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+                        <select id="competitor-post-username" onchange="loadCompetitorPosts()">
+                            <option value="">全アカウント</option>
+                        </select>
+                        <select id="competitor-post-monitored" onchange="loadCompetitorPosts()">
+                            <option value="">全ポスト</option>
+                            <option value="true">監視中のみ</option>
+                            <option value="false">未監視のみ</option>
+                        </select>
+                        <input id="competitor-post-since-days" type="number" min="1" max="30" placeholder="過去日数" style="width:110px;" onchange="loadCompetitorPosts()">
+                        <input id="competitor-post-limit" type="number" min="1" max="1000" value="200" style="width:100px;" onchange="loadCompetitorPosts()">
+                        <button class="btn btn-sm btn-outline" onclick="enableVisibleCompetitorPosts()">表示中を監視ON</button>
+                        <button class="btn btn-sm btn-outline" onclick="loadCompetitorPosts()">再読込</button>
+                    </div>
+                </div>
+                <div id="competitor-backfill-result" style="display:none;margin-bottom:12px;border:1px solid var(--border);border-radius:8px;padding:10px;color:var(--text-muted);font-size:13px;"></div>
+                <div id="competitor-post-detail" style="margin-bottom:14px;"></div>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>監視</th>
+                                <th>アカウント</th>
+                                <th>ポスト</th>
+                                <th>いいね</th>
+                                <th>RT</th>
+                                <th>リプ</th>
+                                <th>BM</th>
+                                <th>インプ</th>
+                                <th>最終取得</th>
+                            </tr>
+                        </thead>
+                        <tbody id="competitor-posts-body">
+                            <tr><td colspan="9" style="color:var(--text-muted);">読み込み前</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tweet Page -->
+        <div id="page-tweet" class="page">
+            <div class="page-header">
+                <h2>ツイート</h2>
+                <p>ツイートの投稿・予約</p>
+            </div>
+            <div class="two-col">
+                <div class="card">
+                    <div class="card-title">ツイート作成</div>
+                    <div class="form-group">
+                        <label>ツイート内容</label>
+                        <textarea id="tweet-text" placeholder="ツイート内容を入力..." rows="4"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>予約日時 (任意)</label>
+                        <input type="datetime-local" id="tweet-schedule">
+                    </div>
+                    <div class="form-group">
+                        <label>画像 (任意・最大4枚)</label>
+                        <input type="file" id="tweet-media-files" accept="image/*" multiple onchange="handleTweetMediaSelection(event)">
+                        <div id="tweet-media-selection" style="margin-top:8px;font-size:12px;color:var(--text-muted);">画像なし</div>
+                        <div style="margin-top:6px;">
+                            <button class="btn btn-sm btn-outline" type="button" onclick="clearTweetMediaSelection()">画像をクリア</button>
+                        </div>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-primary" onclick="postTweet()">今すぐ投稿</button>
+                        <button class="btn btn-outline" onclick="scheduleTweet()">予約投稿</button>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-title">対象アカウント</div>
+                    <div class="checkbox-list" id="tweet-account-list"></div>
+                    <div style="margin-top:8px;">
+                        <button class="btn btn-sm btn-outline" onclick="selectAllCheckboxes('tweet-account-list')">全選択</button>
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-title">予約済みツイート</div>
+                <div id="scheduled-tweets-list"></div>
+            </div>
+        </div>
+
+        <!-- Profile Page -->
+        <div id="page-profile" class="page">
+            <div class="page-header">
+                <h2>プロフィール</h2>
+                <p>アイコン一括変更 / LLMプロフィール / テキスト一括変更 / 手動設定</p>
+            </div>
+
+            <div class="btn-group" style="margin-bottom:16px;">
+                <button class="btn btn-primary" data-prof-tab="icons" onclick="switchProfileTab('icons')">アイコン検索</button>
+                <button class="btn btn-outline" data-prof-tab="textbulk" onclick="switchProfileTab('textbulk')">テキスト一括変更</button>
+                <button class="btn btn-outline" data-prof-tab="llm" onclick="switchProfileTab('llm')">LLMプロフィール</button>
+                <button class="btn btn-outline" data-prof-tab="manual" onclick="switchProfileTab('manual')">手動設定</button>
+            </div>
+
+            <!-- 共通: 対象アカウント選択 -->
+            <div class="card" style="margin-bottom:16px;">
+                <div class="card-title">対象アカウント</div>
+                <div style="margin-bottom:8px;display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+                    <span style="font-size:12px;color:var(--text-muted)">絞り込み:</span>
+                    <button class="btn btn-sm btn-outline cb-filter-btn" data-target="profile-account-list" data-filter="all" onclick="filterCheckboxList('profile-account-list','all')" style="font-size:11px">全て</button>
+                    <button class="btn btn-sm btn-outline cb-filter-btn" data-target="profile-account-list" data-filter="no-icon" onclick="filterCheckboxList('profile-account-list','no-icon')" style="font-size:11px">アイコン未変更</button>
+                    <button class="btn btn-sm btn-outline cb-filter-btn" data-target="profile-account-list" data-filter="no-name" onclick="filterCheckboxList('profile-account-list','no-name')" style="font-size:11px">名前未変更</button>
+                    <button class="btn btn-sm btn-outline cb-filter-btn" data-target="profile-account-list" data-filter="no-bio" onclick="filterCheckboxList('profile-account-list','no-bio')" style="font-size:11px">プロフ未変更</button>
+                    <button class="btn btn-sm btn-outline cb-filter-btn" data-target="profile-account-list" data-filter="no-profile" onclick="filterCheckboxList('profile-account-list','no-profile')" style="font-size:11px">全て未設定</button>
+                    <button class="btn btn-sm btn-outline cb-filter-btn" data-target="profile-account-list" data-filter="edited" onclick="filterCheckboxList('profile-account-list','edited')" style="font-size:11px">設定済み</button>
+                </div>
+                <div class="checkbox-list" id="profile-account-list"></div>
+                <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;">
+                    <button class="btn btn-sm btn-outline" onclick="selectAllCheckboxes('profile-account-list')">全選択</button>
+                    <button class="btn btn-sm btn-outline" onclick="selectFilteredCheckboxes('profile-account-list')">表示中を全選択</button>
+                    <button class="btn btn-sm btn-secondary" onclick="reloadProfileAvatars()">アイコン再読み込み</button>
+                </div>
+            </div>
+
+            <!-- Tab: アイコン検索 -->
+            <div id="prof-tab-icons" class="prof-tab">
+                <div class="card">
+                    <div class="card-title">Pinterest 画像検索</div>
+                    <p style="font-size:12px;color:var(--text-muted);margin-bottom:8px;">
+                        キーワードで画像を検索 → 使いたい画像を選択 → 「承認して一括適用」で選択アカウントに上から順にアイコン設定
+                    </p>
+                    <div class="form-group" style="display:flex;gap:8px;align-items:flex-end;">
+                        <div style="flex:1;">
+                            <label>検索キーワード</label>
+                            <input type="text" id="icon-search-keyword" placeholder="例: anime icon, aesthetic profile picture">
+                        </div>
+                        <button class="btn btn-primary" onclick="searchIcons()" id="icon-search-btn">検索</button>
+                    </div>
+                </div>
+                <div class="card" id="icon-results-card" style="display:none;">
+                    <div class="card-title">検索結果 <span id="icon-result-count" style="color:var(--text-muted);font-weight:normal;font-size:13px;"></span></div>
+                    <p style="font-size:12px;color:var(--text-muted);margin-bottom:8px;">
+                        クリックまたはマウスドラッグで画像を選択。選択した順にアカウントへ割り当てられます。
+                    </p>
+                    <div id="icon-results-grid" class="icon-grid"></div>
+                    <div style="margin-top:12px;text-align:center;">
+                        <button class="btn btn-secondary" onclick="searchIcons(true)" id="icon-load-more-btn" style="width:100%;padding:10px;">次の30件を読み込む ▼</button>
+                    </div>
+                    <div style="margin-top:12px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+                        <button class="btn btn-primary" onclick="approveIcons()" id="icon-approve-btn">承認して一括適用</button>
+                        <button class="btn btn-success" onclick="autoSelectIcons()" id="icon-auto-select-btn" style="display:none;font-size:12px;"></button>
+                        <button class="btn btn-secondary" onclick="selectAllIcons()" style="font-size:12px;">全選択</button>
+                        <button class="btn btn-secondary" onclick="deselectAllIcons()" style="font-size:12px;">全解除</button>
+                        <span id="icon-selected-count" style="font-size:13px;color:var(--text-muted);"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab: テキスト一括変更 -->
+            <div id="prof-tab-textbulk" class="prof-tab" style="display:none;">
+                <div class="card">
+                    <div class="card-title">表示名テキスト一括変更</div>
+                    <p style="font-size:12px;color:var(--text-muted);margin-bottom:8px;">
+                        変更したい表示名を <strong>カンマ区切り</strong> または <strong>改行区切り</strong> で貼り付けてください。<br>
+                        選択アカウントに上から順に割り当てます。
+                    </p>
+                    <div class="form-group">
+                        <label>表示名リスト</label>
+                        <textarea id="textbulk-names" rows="5" placeholder="例: Alice, Bob, Charlie&#10;または1行に1つ:&#10;Alice&#10;Bob&#10;Charlie"></textarea>
+                    </div>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                        <button class="btn btn-outline" onclick="previewTextBulkNames()">プレビュー</button>
+                        <button class="btn btn-outline" onclick="shuffleTextBulkNames()">シャッフル</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">自己紹介テキスト一括変更</div>
+                    <p style="font-size:12px;color:var(--text-muted);margin-bottom:8px;">
+                        変更したい自己紹介文を <strong>カンマ区切り</strong> または <strong>改行区切り</strong> で貼り付けてください。<br>
+                        選択アカウントに上から順に割り当てます。空欄にすると表示名のみ変更します。
+                    </p>
+                    <div class="form-group">
+                        <label>自己紹介リスト</label>
+                        <textarea id="textbulk-bios" rows="5" placeholder="例: Web developer / Coffee lover, Digital artist, Music is life&#10;または1行に1つ:&#10;Web developer / Coffee lover&#10;Digital artist&#10;Music is life"></textarea>
+                    </div>
+                </div>
+
+                <div class="card" id="textbulk-preview-card" style="display:none;">
+                    <div class="card-title">プレビュー <span id="textbulk-preview-count" style="color:var(--text-muted);font-weight:normal;font-size:13px;"></span></div>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead><tr><th>#</th><th>アカウント</th><th></th><th>表示名</th><th>自己紹介</th></tr></thead>
+                            <tbody id="textbulk-preview-tbody"></tbody>
+                        </table>
+                    </div>
+                    <div style="margin-top:12px;display:flex;gap:8px;">
+                        <button class="btn btn-primary" onclick="applyTextBulkProfiles()">この内容で一括適用</button>
+                        <button class="btn btn-outline" onclick="shuffleTextBulkNames()">再シャッフル</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab: LLMプロフィール -->
+            <div id="prof-tab-llm" class="prof-tab" style="display:none;">
+                <div class="card">
+                    <div class="card-title">LLMプロフィール</div>
+                    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px;">
+                        <label style="display:flex;align-items:center;gap:6px;margin:0;">
+                            <input type="checkbox" id="llm-profile-regenerate">
+                            <span>生成済みも再生成</span>
+                        </label>
+                        <span id="llm-profile-summary" style="font-size:12px;color:var(--text-muted);"></span>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-primary" onclick="generateLlmProfiles()">生成</button>
+                        <button class="btn btn-outline" onclick="loadLlmProfiles()">更新</button>
+                        <button class="btn btn-outline" onclick="selectAllLlmProfileChecks(true)">全選択</button>
+                        <button class="btn btn-outline" onclick="selectAllLlmProfileChecks(false)">全解除</button>
+                        <button class="btn btn-primary" onclick="applyLlmProfiles()">チェック分を適用</button>
+                    </div>
+                </div>
+                <div class="card" id="llm-profile-preview-card">
+                    <div class="card-title">プレビュー <span id="llm-profile-preview-count" style="color:var(--text-muted);font-weight:normal;font-size:13px;"></span></div>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead><tr><th>適用</th><th>アカウント</th><th>表示名</th><th>Bio</th><th>Tone / Topic</th><th>状態</th></tr></thead>
+                            <tbody id="llm-profile-preview-tbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab: 手動 -->
+            <div id="prof-tab-manual" class="prof-tab" style="display:none;">
+                <div class="card">
+                    <div class="card-title">手動プロフィール設定</div>
+                    <p style="font-size:12px;color:var(--text-muted);margin-bottom:8px;">全選択アカウントに同じ内容を適用します。</p>
+                    <div class="form-group">
+                        <label>表示名</label>
+                        <input type="text" id="profile-name" placeholder="表示名を入力">
+                    </div>
+                    <div class="form-group">
+                        <label>自己紹介</label>
+                        <textarea id="profile-bio" placeholder="自己紹介文を入力" rows="3"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>アイコン画像パス</label>
+                        <input type="text" id="profile-icon" placeholder="/path/to/icon.jpg">
+                    </div>
+                    <div class="form-group">
+                        <label>ヘッダー画像パス</label>
+                        <input type="text" id="profile-header" placeholder="/path/to/header.jpg">
+                    </div>
+                    <button class="btn btn-primary" onclick="updateProfiles()">選択アカウントに適用</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bulk Actions Page -->
+        <div id="page-actions" class="page">
+            <div class="page-header">
+                <h2>一括アクション</h2>
+                <p>いいね・ブックマーク・リツイート・フォロー</p>
+            </div>
+            <div class="card" style="margin-bottom:16px;">
+                <div class="card-title">ツイートID指定エンゲージ</div>
+                <div class="two-col">
+                    <div>
+                        <div class="form-group">
+                            <label>ツイートID / URL</label>
+                            <input type="text" id="action-tweet-id" placeholder="1234567890123456789 または https://x.com/user/status/123...">
+                        </div>
+                        <div class="form-group">
+                            <label>実行数量</label>
+                            <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;">
+                                <div>
+                                    <label style="font-size:12px;color:var(--text-muted);">いいね</label>
+                                    <input type="number" id="action-count-like" min="0" value="5">
+                                </div>
+                                <div>
+                                    <label style="font-size:12px;color:var(--text-muted);">ブックマーク</label>
+                                    <input type="number" id="action-count-bookmark" min="0" value="0">
+                                </div>
+                                <div>
+                                    <label style="font-size:12px;color:var(--text-muted);">RT</label>
+                                    <input type="number" id="action-count-retweet" min="0" value="0">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="btn-group">
+                            <button class="btn btn-outline" onclick="previewUrlEngagementAccounts()">対象アカウントを抽出</button>
+                            <button class="btn btn-primary" id="action-url-execute-btn" onclick="executeUrlEngagement()" disabled>実行</button>
+                        </div>
+                        <div id="action-url-preview-summary" style="font-size:12px;color:var(--text-muted);margin-top:8px;"></div>
+                    </div>
+                    <div>
+                        <div class="form-group">
+                            <label>対象アカウントの条件・ソート</label>
+                        </div>
+                        <div class="form-group" style="display:flex;gap:8px;">
+                            <div style="flex:1;">
+                                <label>作成年 From</label>
+                                <select id="action-filter-year-from"><option value="">指定なし</option></select>
+                            </div>
+                            <div style="flex:1;">
+                                <label>作成年 To</label>
+                                <select id="action-filter-year-to"><option value="">指定なし</option></select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>シャドウバンチェック</label>
+                            <select id="action-filter-shadowban">
+                                <option value="">全て（未チェック含む）</option>
+                                <option value="clean">問題なしのみ</option>
+                                <option value="search_ok">検索完全OKのみ</option>
+                                <option value="latest_post_latest_ok">最新投稿検索OK（最新）のみ</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="display:flex;gap:8px;">
+                            <div style="flex:1;">
+                                <label>アカウント状態</label>
+                                <select id="action-filter-status">
+                                    <option value="">全て</option>
+                                    <option value="active">active のみ</option>
+                                    <option value="error">error のみ</option>
+                                </select>
+                            </div>
+                            <div style="flex:1;">
+                                <label>Proxy指定</label>
+                                <select id="action-filter-proxy"><option value="">全て</option></select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>ID指定</label>
+                            <textarea id="action-filter-usernames" rows="3" placeholder="@username / x.com/username を改行・カンマ区切りで指定"></textarea>
+                        </div>
+                        <div class="form-group" style="display:flex;gap:8px;">
+                            <div style="flex:1;">
+                                <label>第1ソート</label>
+                                <select id="action-filter-sort1">
+                                    <option value="">なし</option>
+                                    <option value="created_year">作成年（古い順）</option>
+                                    <option value="-created_year">作成年（新しい順）</option>
+                                    <option value="-followers">フォロワー数（多い順）</option>
+                                    <option value="followers">フォロワー数（少ない順）</option>
+                                    <option value="-statuses">ツイート数（多い順）</option>
+                                    <option value="last_login">最終ログイン（古い順）</option>
+                                    <option value="username">ユーザー名（A-Z）</option>
+                                </select>
+                            </div>
+                            <div style="flex:1;">
+                                <label>第2ソート</label>
+                                <select id="action-filter-sort2">
+                                    <option value="">なし</option>
+                                    <option value="created_year">作成年（古い順）</option>
+                                    <option value="-created_year">作成年（新しい順）</option>
+                                    <option value="-followers">フォロワー数（多い順）</option>
+                                    <option value="followers">フォロワー数（少ない順）</option>
+                                    <option value="-statuses">ツイート数（多い順）</option>
+                                    <option value="username">ユーザー名（A-Z）</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group" style="display:flex;gap:8px;align-items:flex-end;">
+                            <div style="flex:1;">
+                                <label>必要アカウント数</label>
+                                <input type="number" id="action-filter-limit" min="1" value="5" readonly>
+                            </div>
+                            <div style="flex:1;">
+                                <label>並列数</label>
+                                <input type="number" id="action-concurrency" min="1" max="10" value="5">
+                            </div>
+                            <label style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">
+                                <input type="checkbox" id="action-filter-exclude-exported" checked>
+                                エクスポート済み除外
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div id="action-url-preview-area" style="margin-top:12px;max-height:260px;overflow-y:auto;">
+                    <p style="color:var(--text-muted)">ツイートIDと数量を入れて対象アカウントを抽出してください</p>
+                </div>
+            </div>
+            <div class="two-col">
+                <div>
+                    <!-- Like -->
+                    <div class="card">
+                        <div class="card-title">いいね</div>
+                        <div class="form-group">
+                            <label>ツイートURL (1行に1つ)</label>
+                            <textarea id="like-targets" placeholder="https://x.com/user/status/123..." rows="3"></textarea>
+                        </div>
+                        <button class="btn btn-primary" onclick="bulkAction('like')">いいね実行</button>
+                    </div>
+                    <!-- Bookmark -->
+                    <div class="card">
+                        <div class="card-title">ブックマーク</div>
+                        <div class="form-group">
+                            <label>ツイートURL (1行に1つ)</label>
+                            <textarea id="bookmark-targets" placeholder="https://x.com/user/status/123..." rows="3"></textarea>
+                        </div>
+                        <button class="btn btn-primary" onclick="bulkAction('bookmark')">ブックマーク実行</button>
+                    </div>
+                    <!-- Follow -->
+                    <div class="card">
+                        <div class="card-title">フォロー</div>
+                        <div class="form-group">
+                            <label>ユーザー名 (1行に1つ、@なし)</label>
+                            <textarea id="follow-targets" placeholder="username1&#10;username2" rows="3"></textarea>
+                        </div>
+                        <button class="btn btn-primary" onclick="bulkAction('follow')">フォロー実行</button>
+                    </div>
+                    <!-- Retweet -->
+                    <div class="card">
+                        <div class="card-title">リツイート</div>
+                        <div class="form-group">
+                            <label>ツイートURL (1行に1つ)</label>
+                            <textarea id="retweet-targets" placeholder="https://x.com/user/status/123..." rows="3"></textarea>
+                        </div>
+                        <button class="btn btn-primary" onclick="bulkAction('retweet')">リツイート実行</button>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-title">対象アカウント</div>
+                    <div class="checkbox-list" id="action-account-list"></div>
+                    <div style="margin-top:8px;">
+                        <button class="btn btn-sm btn-outline" onclick="selectAllCheckboxes('action-account-list')">全選択</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Proxy Management Page -->
+        <div id="page-proxy" class="page">
+            <div class="page-header">
+                <h2>Proxy管理</h2>
+                <p>Proxyの登録・アカウントへの割当・ヘルスチェック</p>
+            </div>
+
+            <!-- アラート表示エリア -->
+            <div id="proxy-alerts-area" style="margin-bottom:16px;"></div>
+
+            <!-- 統計 -->
+            <div class="stats-grid" style="margin-bottom:16px;">
+                <div class="stat-card">
+                    <div class="stat-value" id="proxy-stat-total">-</div>
+                    <div class="stat-label">Proxy数</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="proxy-stat-accounts">-</div>
+                    <div class="stat-label">割当済み</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="proxy-stat-unassigned">-</div>
+                    <div class="stat-label">未割当</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="proxy-stat-alerts">-</div>
+                    <div class="stat-label">凍結アラート</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="proxy-stat-escape">-</div>
+                    <div class="stat-label">自動退避24h</div>
+                </div>
+            </div>
+
+            <div id="proxy-escape-area" style="margin-bottom:16px;"></div>
+
+            <div class="btn-group" style="margin-bottom:16px;">
+                <button class="btn btn-primary" onclick="loadProxyDashboard()">更新</button>
+                <button class="btn btn-success" onclick="runProxyHealthcheck()">全Proxyヘルスチェック</button>
+                <button class="btn btn-warning" onclick="autoAssignProxies()">⚡ 自動割振</button>
+            </div>
+
+            <div class="two-col">
+                <!-- 左: Proxy追加 + 一覧 -->
+                <div>
+                    <!-- Proxy 追加 -->
+                    <div class="card" style="margin-bottom:16px;">
+                        <div class="card-title">Proxy 追加</div>
+                        <p style="font-size:12px;color:var(--text-muted);margin-bottom:8px;">
+                            1行1Proxy。表示名をつける場合は <code>表示名|HOST:Port:User:Pass</code> 形式。<br>
+                            表示名なしでも可: <code>HOST:Port:User:Pass</code>
+                        </p>
+                        <div class="form-group">
+                            <textarea id="proxy-import-text" rows="4" placeholder="日本サーバー1|123.45.67.89:8080:user1:pass1&#10;US-Proxy|98.76.54.32:8080:user2:pass2&#10;111.222.33.44:3128:user3:pass3"></textarea>
+                        </div>
+                        <div class="form-group" style="display:flex;align-items:flex-start;gap:8px;padding:8px 10px;background:var(--bg-dark);border-radius:6px;margin-bottom:12px;">
+                            <input type="checkbox" id="proxy-import-residential" style="margin-top:3px;">
+                            <label for="proxy-import-residential" style="font-size:12px;line-height:1.5;">
+                                <strong>Residential ゲートウェイとして追加</strong>
+                                <div style="color:var(--text-muted);margin-top:2px;">
+                                    IPRoyal/Smartproxy/SOAX 等の帯域課金プロキシ向け。チェックすると、このゲートウェイをアカウントに割り当てた際、<strong>8文字の session ID を自動生成</strong>して固有IPを確保します。
+                                </div>
+                                <div style="color:var(--text-muted);margin-top:2px;font-size:11px;">
+                                    例: <code>IPRoyal|geo.iproyal.com:12321:USERNAME-country-jp:PASSWORD</code>
+                                </div>
+                            </label>
+                        </div>
+                        <button class="btn btn-primary" onclick="importProxies()">Proxy追加</button>
+                    </div>
+
+                    <!-- Proxy 一覧 -->
+                    <div class="card">
+                        <div class="card-title">Proxy 一覧</div>
+                        <div id="proxy-table-area">
+                            <p style="color:var(--text-muted)">読み込み中...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 右: アカウントへの割当 -->
+                <div>
+                    <div class="card" style="margin-bottom:16px;">
+                        <div class="card-title">Proxyをアカウントに割当</div>
+                        <div class="form-group">
+                            <label>適用するProxy</label>
+                            <select id="proxy-assign-select" style="width:100%;">
+                                <option value="">-- Proxyを選択 --</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>対象アカウント</label>
+                            <div class="checkbox-list" id="proxy-account-list" style="max-height:400px;overflow-y:auto;"></div>
+                            <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;">
+                                <button class="btn btn-sm btn-outline" onclick="selectAllCheckboxes('proxy-account-list')">全選択</button>
+                                <button class="btn btn-sm btn-outline" onclick="deselectAllCheckboxes('proxy-account-list')">全解除</button>
+                                <button class="btn btn-sm btn-outline" onclick="selectUnassignedForProxy()">未割当のみ選択</button>
+                            </div>
+                        </div>
+                        <div class="btn-group">
+                            <button class="btn btn-primary" onclick="assignProxyToAccounts()">Proxy割当</button>
+                            <button class="btn btn-danger" onclick="unassignProxyFromAccounts()">Proxy解除</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Farming Page -->
+        <div id="page-farming" class="page">
+            <div class="page-header">
+                <h2>育成工場</h2>
+                <p>コンフィグを設定すれば毎日自動でランダム時刻にツイート</p>
+            </div>
+            <div class="btn-group" style="margin-bottom:16px;">
+                <button class="btn btn-primary" data-farm-tab="configs" onclick="switchFarmTab('configs')">コンフィグ一覧</button>
+                <button class="btn btn-outline" data-farm-tab="create" onclick="switchFarmTab('create')">新規作成</button>
+                <button class="btn btn-outline" data-farm-tab="schedule" onclick="switchFarmTab('schedule')">今日の予定</button>
+                <button class="btn btn-outline" data-farm-tab="history" onclick="switchFarmTab('history')">投稿履歴</button>
+                <button class="btn btn-outline" data-farm-tab="quarantine" onclick="switchFarmTab('quarantine')">隔離 <span id="farm-quarantine-badge" style="display:none;background:var(--danger);color:white;border-radius:10px;padding:1px 6px;font-size:10px;margin-left:4px;">0</span></button>
+                <button class="btn btn-outline" data-farm-tab="resources" onclick="switchFarmTab('resources')">リソース編集</button>
+            </div>
+
+            <!-- Config List -->
+            <div id="farm-tab-configs" class="farm-tab">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                    <button class="btn btn-outline" onclick="loadFarmingConfigs()">更新</button>
+                    <div style="font-size:12px;color:var(--text-muted);" id="farm-configs-summary"></div>
+                </div>
+                <div id="farm-configs-list">
+                    <p style="color:var(--text-muted)">読み込み中...</p>
+                </div>
+            </div>
+
+            <!-- Create Config -->
+            <div id="farm-tab-create" class="farm-tab" style="display:none;">
+                <div class="two-col">
+                    <div class="card">
+                        <div class="card-title">コンフィグ設定</div>
+                        <div class="form-group">
+                            <label>コンフィグ名</label>
+                            <input type="text" id="farm-name" placeholder="例: 朝の日常ツイート">
+                        </div>
+                        <div class="form-group">
+                            <label>モード</label>
+                            <select id="farm-mode" onchange="updateFarmModeForm()">
+                                <option value="random_template">ランダムテンプレート (おすすめ)</option>
+                                <option value="template">テンプレート+変数</option>
+                                <option value="target">ターゲットアカウント複製</option>
+                                <option value="unsplash">Unsplash画像+文</option>
+                            </select>
+                        </div>
+
+                        <!-- Random Template mode fields (default) -->
+                        <div id="farm-fields-random_template" class="farm-fields">
+                            <div class="form-group">
+                                <label>テンプレートプール <small style="color:var(--text-muted)">カンマ区切り・{変数名}で自動抽選</small></label>
+                                <div style="display:flex;gap:8px;margin-bottom:8px;">
+                                    <button class="btn btn-outline" style="font-size:12px;" onclick="loadTweetTemplates()">テンプレート集を読み込む</button>
+                                    <span id="farm-random-tpl-count" style="font-size:12px;color:var(--text-muted);line-height:32px;"></span>
+                                </div>
+                                <textarea id="farm-random-templates" placeholder="今日{food}食べたよ！{emoji},{greeting}〜！今日は{tenki}だね {emoji},{anime}の最新話見た！{reaction} {emoji}" rows="8" oninput="updateRandomTemplateCount()"></textarea>
+                            </div>
+                            <div style="font-size:12px;color:var(--text-muted);margin-top:-8px;margin-bottom:8px;">
+                                テンプレートを <strong>, (カンマ)</strong> で区切って入力。実行時にランダムに1つ選び、{変数名} もランダム抽選で埋めます。
+                            </div>
+                        </div>
+
+                        <!-- Template mode fields -->
+                        <div id="farm-fields-template" class="farm-fields" style="display:none;">
+                            <div class="form-group">
+                                <label>テンプレート文 <small style="color:var(--text-muted)">{food} などのプレースホルダを使用</small></label>
+                                <textarea id="farm-template" placeholder="今日{food}食べたよ！明日は{place}行きたいな！" rows="3"></textarea>
+                            </div>
+                            <div id="farm-variables-hint" style="font-size:12px;color:var(--text-muted)"></div>
+                        </div>
+
+                        <!-- Target mode fields -->
+                        <div id="farm-fields-target" class="farm-fields" style="display:none;">
+                            <div class="form-group">
+                                <label>ターゲットユーザー名 (@なし)</label>
+                                <input type="text" id="farm-target-username" placeholder="example_user">
+                            </div>
+                            <div class="form-group">
+                                <label>取得件数</label>
+                                <input type="number" id="farm-target-limit" value="20" min="5" max="50">
+                            </div>
+                        </div>
+
+                        <!-- Unsplash mode fields -->
+                        <div id="farm-fields-unsplash" class="farm-fields" style="display:none;">
+                            <div class="form-group">
+                                <label>検索キーワード (英語推奨)</label>
+                                <input type="text" id="farm-unsplash-keyword" placeholder="coffee, sunset, cat...">
+                            </div>
+                            <div class="form-group">
+                                <label>キャプション文 (任意、{}変数可)</label>
+                                <textarea id="farm-unsplash-caption" placeholder="今日の一枚。{mood}な気分。" rows="2"></textarea>
+                            </div>
+                        </div>
+
+                        <hr style="border-color:var(--border);margin:16px 0;">
+
+                        <div class="card-title" style="font-size:14px;">毎日の配信スケジュール</div>
+                        <p style="font-size:12px;color:var(--text-muted);margin-bottom:8px;">
+                            毎日この時間帯にランダムな時刻で自動投稿します。コンフィグは停止するまで毎日繰り返します。
+                        </p>
+                        <div class="form-group" style="display:flex;gap:8px;">
+                            <div style="flex:1;">
+                                <label>開始時刻</label>
+                                <input type="number" id="farm-hour-start" value="9" min="0" max="23">
+                                <small style="color:var(--text-muted)">時 (0-23)</small>
+                            </div>
+                            <div style="flex:1;">
+                                <label>終了時刻</label>
+                                <input type="number" id="farm-hour-end" value="23" min="0" max="23">
+                                <small style="color:var(--text-muted)">時 (0-23)</small>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>1アカウントあたり/日の投稿数</label>
+                            <input type="number" id="farm-slots-per-day" value="1" min="1" max="10">
+                            <small style="color:var(--text-muted)">例: 3 なら各アカウントが毎日この時間帯内に 3 回ランダム時刻で投稿</small>
+                        </div>
+
+                        <div class="btn-group">
+                            <button class="btn btn-outline" onclick="previewFarming()">プレビュー</button>
+                            <button class="btn btn-primary" onclick="createFarmingConfig()">コンフィグ作成</button>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">対象アカウント</div>
+                        <div class="checkbox-list" id="farm-account-list"></div>
+                        <div style="margin-top:8px;display:flex;gap:6px;">
+                            <button class="btn btn-sm btn-outline" onclick="selectAllCheckboxes('farm-account-list')">全選択</button>
+                            <button class="btn btn-sm btn-outline" onclick="selectFilteredCheckboxes('farm-account-list')">表示中を全選択</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card" id="farm-preview-card" style="display:none;">
+                    <div class="card-title">プレビュー結果</div>
+                    <div id="farm-preview-body"></div>
+                </div>
+            </div>
+
+            <!-- Today's Schedule -->
+            <div id="farm-tab-schedule" class="farm-tab" style="display:none;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:8px;">
+                    <div class="btn-group">
+                        <button class="btn btn-outline" onclick="loadTodaySchedule()">更新</button>
+                        <button class="btn btn-primary" onclick="replanToday()">再スケジュール</button>
+                    </div>
+                    <div style="font-size:12px;color:var(--text-muted);" id="farm-schedule-summary"></div>
+                </div>
+                <div id="farm-today-schedule">
+                    <p style="color:var(--text-muted)">読み込み中...</p>
+                </div>
+            </div>
+
+            <!-- Post History -->
+            <div id="farm-tab-history" class="farm-tab" style="display:none;">
+                <div class="stats-grid" id="history-stats" style="margin-bottom:16px;">
+                    <div class="stat-card">
+                        <div class="stat-value" id="history-stat-total">-</div>
+                        <div class="stat-label">合計実行</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="history-stat-posted" style="color:var(--success);">-</div>
+                        <div class="stat-label">投稿成功</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="history-stat-errors" style="color:var(--danger);">-</div>
+                        <div class="stat-label">失敗</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="history-stat-accounts">-</div>
+                        <div class="stat-label">アカウント数</div>
+                    </div>
+                </div>
+                <div class="card" style="margin-bottom:12px;padding:12px;">
+                    <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;">
+                        <div class="form-group" style="margin-bottom:0;flex:0 0 180px;">
+                            <label style="font-size:11px;font-weight:600;">アカウント</label>
+                            <select id="history-filter-account" onchange="filterPostHistory()" style="font-size:12px;">
+                                <option value="">全アカウント</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin-bottom:0;flex:0 0 130px;">
+                            <label style="font-size:11px;font-weight:600;">状態</label>
+                            <select id="history-filter-status" onchange="filterPostHistory()" style="font-size:12px;">
+                                <option value="">すべて</option>
+                                <option value="posted">投稿成功</option>
+                                <option value="error">エラー</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin-bottom:0;flex:0 0 130px;">
+                            <label style="font-size:11px;font-weight:600;">モード</label>
+                            <select id="history-filter-mode" onchange="filterPostHistory()" style="font-size:12px;">
+                                <option value="">すべて</option>
+                                <option value="random_template">ランダムテンプレート</option>
+                                <option value="template">テンプレート+変数</option>
+                                <option value="target">ターゲット複製</option>
+                                <option value="unsplash">Unsplash画像</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin-bottom:0;flex:1;min-width:150px;">
+                            <label style="font-size:11px;font-weight:600;">テキスト検索</label>
+                            <input type="text" id="history-filter-search" placeholder="ツイート内容で検索..."
+                                   oninput="filterPostHistory()" style="font-size:12px;">
+                        </div>
+                        <button class="btn btn-sm btn-outline" onclick="loadPostHistory()" style="height:32px;">更新</button>
+                    </div>
+                </div>
+                <div id="history-table-area">
+                    <p style="color:var(--text-muted)">タブを開くと自動で読み込みます...</p>
+                </div>
+                <div id="history-pagination" style="display:flex;justify-content:center;align-items:center;gap:8px;margin-top:12px;"></div>
+            </div>
+
+            <!-- Quarantine -->
+            <div id="farm-tab-quarantine" class="farm-tab" style="display:none;">
+                <div class="stats-grid" style="margin-bottom:16px;">
+                    <div class="stat-card">
+                        <div class="stat-value" id="q-stat-active" style="color:var(--warning);">-</div>
+                        <div class="stat-label">隔離中 (時限)</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="q-stat-retired" style="color:var(--danger);">-</div>
+                        <div class="stat-label">退役済み</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="q-stat-total">-</div>
+                        <div class="stat-label">累計記録</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="q-stat-226">-</div>
+                        <div class="stat-label">226 (bot検出)</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="q-stat-9001" style="color:var(--warning);">-</div>
+                        <div class="stat-label">サイレント劣化 (9001)</div>
+                    </div>
+                </div>
+                <div class="card" style="margin-bottom:12px;padding:12px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;">
+                        <div style="font-size:12px;color:var(--text-muted);">
+                            226 は1回目警告 / 2回目除外 / 3回目退役。326 (一時制限) は段階的ストライク (48h→7d→退役)。<br>
+                            <strong>37 "Missing TwitterUserNotSuspended" / 64 (凍結) は即退役</strong>、退役アカウントは下のボタンで一括削除できます。<br>
+                            <strong>9001 (サイレント劣化)</strong>: HTTP 200 だが tweet_results が空 + verify_credentials も失敗する状態 → 12h→48h→退役。
+                        </div>
+                        <div class="btn-group">
+                            <label style="font-size:12px;">
+                                <input type="checkbox" id="q-show-all" onchange="loadQuarantine()">
+                                履歴も表示
+                            </label>
+                            <button class="btn btn-sm btn-outline" onclick="loadQuarantine()">更新</button>
+                            <button class="btn btn-sm btn-danger" onclick="bulkDeleteRetiredQuarantine()" title="37/64 で退役したアカウントを一括削除">凍結アカウントを一括削除</button>
+                        </div>
+                    </div>
+                </div>
+                <div id="farm-quarantine-list">
+                    <p style="color:var(--text-muted)">読み込み中...</p>
+                </div>
+            </div>
+
+            <!-- Resources -->
+            <div id="farm-tab-resources" class="farm-tab" style="display:none;">
+                <div class="two-col">
+                    <div class="card">
+                        <div class="card-title">変数ファイル一覧</div>
+                        <p style="font-size:12px;color:var(--text-muted)">data/resources/variables/*.txt に配置したファイルが自動で読み込まれます。1行1単語、# 始まりはコメント。</p>
+                        <div id="farm-variables-list"></div>
+                        <button class="btn btn-sm btn-outline" onclick="loadFarmingResources()" style="margin-top:8px;">再読込</button>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">NGワード</div>
+                        <p style="font-size:12px;color:var(--text-muted)">1行1ワード。ターゲット複製モードで除外されます。</p>
+                        <textarea id="farm-ngwords" rows="12" placeholder="1行1ワード"></textarea>
+                        <button class="btn btn-primary" onclick="saveFarmingNGWords()" style="margin-top:8px;">保存</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Logic Comparison Page -->
+        <div id="page-logic-comparison" class="page">
+            <div class="page-header">
+                <h2>ロジック比較</h2>
+                <p>現行ロジック10件と、毎日ツイート + 数日に1回画像の10件を固定して観察</p>
+            </div>
+
+            <div class="card" style="margin-bottom:16px;">
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;">
+                    <div>
+                        <div class="card-title">比較セット</div>
+                        <div id="logic-comparison-status" style="font-size:13px;color:var(--text-muted);">読み込み中...</div>
+                    </div>
+                    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                        <label style="font-size:12px;color:var(--text-muted);font-weight:700;">画像間隔</label>
+                        <input type="number" id="logic-image-interval" min="2" max="7" value="3" style="width:90px;">
+                        <button class="btn btn-outline" onclick="loadLogicComparison()">更新</button>
+                        <button class="btn btn-primary" onclick="initializeLogicComparison(false)">20件を自動割当</button>
+                        <button class="btn btn-outline" onclick="initializeLogicComparison(true)">再割当</button>
+                        <button class="btn btn-success" onclick="applyLogicComparison()">実験設定を適用</button>
+                        <button class="btn btn-outline" onclick="captureLogicComparison()">今日を記録</button>
+                        <button class="btn btn-danger" onclick="disableLogicComparison()">実験停止</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stats-grid" id="logic-comparison-stats" style="margin-bottom:16px;"></div>
+
+            <div class="card" style="margin-bottom:16px;">
+                <div class="card-title">日別推移</div>
+                <div id="logic-comparison-daily"></div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">対象アカウント</div>
+                <div id="logic-comparison-accounts"></div>
+            </div>
+        </div>
+
+        <!-- Export Page -->
+        <div id="page-export" class="page">
+            <div class="page-header">
+                <h2>エクスポート</h2>
+                <p>フィルタ・ソートしてアカウントを txt でエクスポート。エクスポート済みアカウントは自動運用から除外されます。</p>
+            </div>
+
+            <!-- 統計 -->
+            <div class="stats-grid" id="export-stats" style="margin-bottom:16px;">
+                <div class="stat-card">
+                    <div class="stat-value" id="export-stat-total">-</div>
+                    <div class="stat-label">全アカウント</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="export-stat-remaining" style="color:var(--success);">-</div>
+                    <div class="stat-label">未エクスポート</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="export-stat-exported">-</div>
+                    <div class="stat-label">エクスポート済み</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="export-stat-clean">-</div>
+                    <div class="stat-label">BAN問題なし</div>
+                </div>
+            </div>
+
+            <div class="two-col">
+                <!-- フィルタ -->
+                <div class="card">
+                    <div class="card-title">フィルタ条件</div>
+                    <p style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">複数条件を組み合わせて絞り込めます</p>
+
+                    <div class="form-group" style="display:flex;gap:8px;">
+                        <div style="flex:1;">
+                            <label>作成年 From</label>
+                            <select id="export-year-from">
+                                <option value="">指定なし</option>
+                            </select>
+                        </div>
+                        <div style="flex:1;">
+                            <label>作成年 To</label>
+                            <select id="export-year-to">
+                                <option value="">指定なし</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>シャドウバンチェック</label>
+                        <select id="export-shadowban">
+                            <option value="">全て（未チェック含む）</option>
+                            <option value="clean">問題なしのみ</option>
+                            <option value="search_ok">検索完全OKのみ</option>
+                            <option value="latest_post_latest_ok">最新投稿検索OK（最新）のみ</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>アカウント状態</label>
+                        <select id="export-status">
+                            <option value="">全て</option>
+                            <option value="active">active のみ</option>
+                            <option value="error">error のみ</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Proxy指定</label>
+                        <select id="export-proxy">
+                            <option value="">全て</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>ID指定</label>
+                        <textarea id="export-usernames" rows="4" placeholder="@username / x.com/username を改行・カンマ区切りで指定" style="width:100%;"></textarea>
+                        <p style="font-size:11px;color:var(--text-muted);margin-top:4px;">入力時はこの一覧に含まれるアカウントだけを対象にします</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="export-exclude-exported" checked>
+                            エクスポート済みを除外
+                        </label>
+                    </div>
+
+                    <hr style="border-color:var(--border);margin:12px 0;">
+
+                    <div class="card-title" style="font-size:13px;">ソート</div>
+                    <div class="form-group">
+                        <label>第1ソート</label>
+                        <select id="export-sort1">
+                            <option value="">なし</option>
+                            <option value="created_year">作成年（古い順）</option>
+                            <option value="-created_year">作成年（新しい順）</option>
+                            <option value="-followers">フォロワー数（多い順）</option>
+                            <option value="followers">フォロワー数（少ない順）</option>
+                            <option value="-statuses">ツイート数（多い順）</option>
+                            <option value="last_login">最終ログイン（古い順）</option>
+                            <option value="username">ユーザー名（A-Z）</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>第2ソート</label>
+                        <select id="export-sort2">
+                            <option value="">なし</option>
+                            <option value="created_year">作成年（古い順）</option>
+                            <option value="-created_year">作成年（新しい順）</option>
+                            <option value="-followers">フォロワー数（多い順）</option>
+                            <option value="followers">フォロワー数（少ない順）</option>
+                            <option value="-statuses">ツイート数（多い順）</option>
+                            <option value="username">ユーザー名（A-Z）</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>表示件数</label>
+                        <input type="number" id="export-limit" min="1" placeholder="全件表示" style="width:100%;">
+                    </div>
+
+                    <div class="btn-group" style="margin-top:12px;">
+                        <button class="btn btn-primary" onclick="previewExport()">プレビュー</button>
+                        <button class="btn btn-outline" onclick="previewPerfectExport()">完璧アカウント</button>
+                        <button class="btn btn-outline" onclick="resetExportFilters()">リセット</button>
+                    </div>
+                </div>
+
+                <!-- プレビュー結果 -->
+                <div class="card">
+                    <div class="card-title" style="display:flex;justify-content:space-between;align-items:center;">
+                        <span>プレビュー</span>
+                        <span id="export-preview-count" style="font-size:12px;color:var(--text-muted);"></span>
+                    </div>
+                    <div id="export-preview-area" style="max-height:500px;overflow-y:auto;">
+                        <p style="color:var(--text-muted)">「プレビュー」を押すと対象アカウントが表示されます</p>
+                    </div>
+                    <div style="margin-top:12px;display:flex;gap:8px;align-items:center;">
+                        <button class="btn btn-primary" id="export-execute-btn" onclick="executeExport()" disabled>
+                            エクスポート実行
+                        </button>
+                        <button class="btn btn-outline" id="export-remove-only-btn" onclick="removePreviewFromFarming()" disabled>
+                            育成除外のみ
+                        </button>
+                        <label style="font-size:12px;">
+                            <input type="checkbox" id="export-remove-farming" checked>
+                            育成コンフィグから除外
+                        </label>
+                    </div>
+                    <p style="font-size:11px;color:var(--text-muted);margin-top:6px;">
+                        形式: username:password:mail:mailpass:2fa:auth_token
+                    </p>
+                </div>
+            </div>
+
+            <!-- エクスポート履歴 -->
+            <div class="card" style="margin-top:16px;">
+                <div class="card-title" style="display:flex;justify-content:space-between;align-items:center;">
+                    <span>エクスポート履歴</span>
+                    <button class="btn btn-sm btn-outline" onclick="loadExportHistory()">更新</button>
+                </div>
+                <div id="export-history-area">
+                    <p style="color:var(--text-muted)">ページを開くと自動で読み込みます...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Deleted Accounts Page -->
+        <div id="page-deleted" class="page">
+            <div class="page-header">
+                <h2>削除済みアカウント</h2>
+                <p>凍結・削除されたアカウントの行動履歴</p>
+            </div>
+            <div class="btn-group" style="margin-bottom:16px;">
+                <button class="btn btn-outline" onclick="loadDeletedAccounts()">更新</button>
+                <button class="btn btn-danger btn-sm" onclick="purgeAllDeletedAccounts()">全アーカイブ削除</button>
+            </div>
+            <div id="deleted-summary" style="margin-bottom:12px;"></div>
+            <div id="deleted-accounts-list"></div>
+        </div>
+
+        <!-- Warmup管理 Page -->
+        <div id="page-warmup" class="page">
+            <div class="page-header">
+                <h2>Warmup管理</h2>
+                <p>新規投入アカウントの段階的育成 (0〜48h read-only → 48〜120h soft ramp → active)</p>
+            </div>
+
+            <div class="btn-group" style="margin-bottom:16px;">
+                <button class="btn btn-outline" onclick="loadWarmupDashboard()">更新</button>
+                <button class="btn btn-outline" onclick="warmupToggleAutoRefresh()">
+                    <span id="warmup-autorefresh-label">自動更新: OFF</span>
+                </button>
+                <button class="btn btn-outline" onclick="openWarmupBulkMarkModal()">ログイン済み未追跡アカウントを追加</button>
+            </div>
+
+            <!-- 概要カード: phase 別カウント -->
+            <div id="warmup-summary" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:16px;">
+                <p style="color:var(--text-muted)">読み込み中...</p>
+            </div>
+
+            <!-- フィルタ -->
+            <div class="card" style="margin-bottom:16px;">
+                <div class="card-title">フィルタ</div>
+                <div class="btn-group" style="flex-wrap:wrap;">
+                    <button class="btn btn-primary btn-sm" data-warmup-filter="all" onclick="warmupSetFilter('all')">すべて</button>
+                    <button class="btn btn-outline btn-sm" data-warmup-filter="readonly" onclick="warmupSetFilter('readonly')">readonly</button>
+                    <button class="btn btn-outline btn-sm" data-warmup-filter="soft_ramp" onclick="warmupSetFilter('soft_ramp')">soft_ramp</button>
+                    <button class="btn btn-outline btn-sm" data-warmup-filter="active" onclick="warmupSetFilter('active')">active</button>
+                </div>
+            </div>
+
+            <!-- アカウント一覧 -->
+            <div class="card" style="margin-bottom:16px;">
+                <div class="card-title">育成中アカウント</div>
+                <div id="warmup-accounts-list">
+                    <p style="color:var(--text-muted)">読み込み中...</p>
+                </div>
+            </div>
+
+            <!-- 直近のアクティビティ -->
+            <div class="card">
+                <div class="card-title">直近の read-only warmup アクティビティ</div>
+                <div id="warmup-activity-list">
+                    <p style="color:var(--text-muted)">読み込み中...</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="page-tasks" class="page">
+            <div class="page-header">
+                <h2>タスク管理</h2>
+                <p>実行中・完了済みタスク</p>
+            </div>
+            <div class="btn-group" style="margin-bottom: 16px;">
+                <button class="btn btn-outline" onclick="refreshTasks()">更新</button>
+                <button class="btn btn-danger btn-sm" onclick="clearTasks()">完了済みを削除</button>
+            </div>
+            <div id="tasks-list"></div>
+        </div>
+
+    </main>
+</div>
+
+<!-- Add Account Modal -->
+<div class="modal-overlay" id="add-account-modal">
+    <div class="modal">
+        <div class="modal-header">
+            <h3>アカウント追加</h3>
+            <button class="modal-close" onclick="closeModal('add-account-modal')">&times;</button>
+        </div>
+        <div class="form-group">
+            <label>ユーザー名 (@なし)</label>
+            <input type="text" id="new-username" placeholder="username">
+        </div>
+        <div class="form-group">
+            <label>パスワード</label>
+            <input type="password" id="new-password" placeholder="パスワード">
+        </div>
+        <div class="form-group">
+            <label>メールアドレス</label>
+            <input type="email" id="new-email" placeholder="email@example.com">
+        </div>
+        <div class="form-group">
+            <label>Auth Token</label>
+            <input type="text" id="new-authtoken" placeholder="auth_tokenの値">
+        </div>
+        <div class="form-group">
+            <label>プロキシ</label>
+            <input type="text" id="new-proxy" placeholder="socks5://user:pass@host:port">
+        </div>
+        <div class="form-group">
+            <label>ログイン方式</label>
+            <select id="new-login-method">
+                <option value="credentials">ID/パスワード</option>
+                <option value="authtoken">Auth Token</option>
+                <option value="cookie">Cookie (最も安全)</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>メモ</label>
+            <input type="text" id="new-notes" placeholder="メモ (任意)">
+        </div>
+        <button class="btn btn-primary" onclick="addAccount()">追加</button>
+    </div>
+</div>
+
+<!-- Account Detail Modal -->
+<div class="modal-overlay" id="account-detail-modal">
+    <div class="modal" style="max-width:600px;">
+        <div class="modal-header">
+            <h3 id="detail-modal-title">アカウント詳細</h3>
+            <button class="modal-close" onclick="closeModal('account-detail-modal')">&times;</button>
+        </div>
+        <div id="detail-modal-body" style="max-height:70vh;overflow-y:auto;"></div>
+    </div>
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container" id="toast-container"></div>
+
+<script>
+    // file:// でもサーバー経由でも動くようJSパスを自動判定
+    (function() {
+        // サーバー版では新インポートUIへ置換されるため、旧UIのDOMを初回描画前に除去する。
+        if (location.protocol !== 'file:') {
+            var importPage = document.getElementById('page-accounts');
+            var importShell = importPage && importPage.querySelector(':scope > .ops-import-bootstrap-shell');
+            if (importPage && importShell) {
+                Array.from(importPage.children).forEach(function(child) {
+                    if (child !== importShell) child.remove();
+                });
+            }
+        }
+        var s = document.createElement('script');
+        s.src = (location.protocol === 'file:') ? 'js/app.js?v=63' : '/static/js/app.js?v=63';
+        document.body.appendChild(s);
+    })();
+</script>
+</body>
+</html>

@@ -1,0 +1,55 @@
+server:
+  host: "127.0.0.1"
+  port: 8000
+
+http_client:
+  user_agent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+
+delays:
+  action_min: 2.0
+  action_max: 5.0
+  between_accounts_min: 5.0
+  between_accounts_max: 15.0
+
+paths:
+  accounts_file: "data/x_accounts.xlsx"
+  sessions_dir: "data/sessions"
+  logs_dir: "logs"
+
+logging:
+  level: "INFO"
+  file: "logs/app.log"
+
+unsplash:
+  access_key: ""  # UNSPLASH_ACCESS_KEY 環境変数があればそちらを優先
+
+farming:
+  max_tweets_per_run: 1000
+
+# リソース制限 (メモリ・CPU 節約)
+resource_limits:
+  max_clients: 20              # 同時に開くhttpxクライアント上限。超えたら古い順に自動回収
+  client_idle_ttl: 300         # アイドル状態のクライアントを自動closeする秒数
+  badge_poll_enabled: false    # 画面非表示時の常駐X通信は行わない
+  max_concurrent_actions: 5    # 一括操作(いいね/フォロー等)の並列数
+  farming_max_concurrent: 3    # 育成工場の同時投稿数 (同時書き込みバーストを抑える)
+
+# 人間的動作シミュレーション (凍結対策)
+humanize:
+  warmup_enabled: true       # API操作前にタイムライン閲覧を挟む
+  browse_after_action: 0.3   # アクション後にランダム閲覧する確率 (0.0〜1.0)
+  night_slowdown: true       # 深夜帯(2-7時)は遅延を2.5倍に
+
+public_check:
+  proxy: ""                  # 例: http://user:pass@host:port or host:port:user:pass
+  headless: true
+  humanize: true
+  page_timeout: 20
+  idle_min: 0.8
+  idle_max: 2.5
+  scrolls_min: 1
+  scrolls_max: 3
+
+shadowban:
+  method: browser  # browser or graphql
+  page_timeout: 45
