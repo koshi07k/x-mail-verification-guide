@@ -15,10 +15,6 @@ from app.automation.shadowban import (
     check_accounts as browser_check_accounts,
     is_authoritative_result,
 )
-from app.automation.shadowban_graphql import (
-    build_runtime_options as graphql_build_runtime_options,
-    check_accounts as graphql_check_accounts,
-)
 from app.core.account_eligibility import shadowban_check_eligibility, shadowban_check_policy_label
 from app.storage.account_metadata import update_bulk
 from app.storage.account_metadata import get_all_metadata
@@ -195,6 +191,10 @@ class ShadowbanDailyScheduler:
 
                 method = settings.shadowban_method.lower()
                 if method == "graphql":
+                    from app.automation.shadowban_graphql import (
+                        build_runtime_options as graphql_build_runtime_options,
+                        check_accounts as graphql_check_accounts,
+                    )
                     runtime = graphql_build_runtime_options(
                         concurrency=max(1, len(checkers)),
                     )
